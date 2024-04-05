@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -43,6 +44,7 @@ import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.nio.file.StandardCopyOption;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -50,13 +52,14 @@ import javax.imageio.ImageIO;
 public class functions {
 
     public static String getContent(String url) throws Exception {
-        Document doc;
-                    doc = Jsoup
-                    .connect(url)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36")
-                    .header("Accept-Language", "*")
-                    .get();
-        return doc.html();
+        InputStream inputStream = new URL(url).openStream();
+        BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
+        String line, lines = "";
+        while ((line = in.readLine()) != null) {
+            lines += line + "\n";
+        }
+        in.close();
+        return lines;
     }
 
     public static String getFolderPath() {
@@ -110,6 +113,9 @@ public class functions {
     }
 
     public static void createFiles(String link, String directory, String url) throws Exception {
+        if (!url.endsWith("/")) {
+            url = url + "/";
+        }
         try {
             if (!link.startsWith("http")) {
                 if (link.contains("/")) {
@@ -119,13 +125,16 @@ public class functions {
                     if (link.contains(".")) {
                         String fileName = link.substring((link.lastIndexOf("/") + 1), link.length());
                         if (fileName.endsWith(".css") || fileName.endsWith(".js") || fileName.endsWith(".html")) {
-                            BufferedWriter out = new BufferedWriter(new FileWriter(directory + resourceType + "\\" + fileName));
+                            BufferedWriter out = new BufferedWriter(
+                                    new FileWriter(directory + resourceType + "\\" + fileName));
                             String content = getContent(url + link);
                             out.write(content);
                             out.close();
-                        } else if (fileName.endsWith(".jpg") || fileName.endsWith(".png") || fileName.endsWith(".gif")) {
+                        } else if (link.endsWith(".jpeg") || fileName.endsWith(".jpg") || fileName.endsWith(".png")
+                                || fileName.endsWith(".gif")) {
                             InputStream in = new URL(url + link).openStream();
-                            Files.copy(in, Paths.get(directory + resourceType + "\\" + fileName), StandardCopyOption.REPLACE_EXISTING);
+                            Files.copy(in, Paths.get(directory + resourceType + "\\" + fileName),
+                                    StandardCopyOption.REPLACE_EXISTING);
                         }
                     }
                 } else {
@@ -134,7 +143,8 @@ public class functions {
                         String content = getContent(url + link);
                         out.write(content);
                         out.close();
-                    } else if (link.endsWith(".jpg") || link.endsWith(".png") || link.endsWith(".gif")) {
+                    } else if (link.endsWith(".jpeg") || link.endsWith(".jpg") || link.endsWith(".png")
+                            || link.endsWith(".gif")) {
                         InputStream in = new URL(url + link).openStream();
                         Files.copy(in, Paths.get(directory + link), StandardCopyOption.REPLACE_EXISTING);
                     }
@@ -196,28 +206,28 @@ public class functions {
     public static void SaveWebsite(String url, String saveDir) throws Exception {
         Document doc;
         List links = new ArrayList<String>();
-        
+
         try {
             doc = Jsoup
                     .connect(url)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36")
+                    .userAgent(
+                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36")
                     .header("Accept-Language", "*")
                     .get();
-            
+
             String title = doc.title();
-            String directory = saveDir + "\\"+title+"\\";
+            String directory = saveDir + "\\" + title + "\\";
             File dir = new File(directory);
             dir.mkdir();
-            if(!new File(directory).isDirectory()){
+            if (!new File(directory).isDirectory()) {
                 directory = saveDir + "\\Untitle\\";
                 dir = new File(directory);
                 dir.mkdir();
             }
-            
+
             BufferedWriter writer = new BufferedWriter(new FileWriter(directory + "index.html"));
             writer.write(doc.html());
             writer.close();
-            
 
             Elements linkElements = doc.select("link");
             for (Element link : linkElements) {
@@ -268,7 +278,9 @@ public class functions {
 
     public static void SendRequests(String url, String[] userAgentsList, String[] proxysList) throws IOException {
         try {
-            String userAgent = (userAgentsList != null && userAgentsList.length > 0) ? userAgentsList[new Random().nextInt(userAgentsList.length)] : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36";
+            String userAgent = (userAgentsList != null && userAgentsList.length > 0)
+                    ? userAgentsList[new Random().nextInt(userAgentsList.length)]
+                    : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36";
 
             if (proxysList != null) {
                 String randomProxy = proxysList[new Random().nextInt(proxysList.length)];
