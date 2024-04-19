@@ -1385,7 +1385,7 @@ public class SpiderFrame extends javax.swing.JFrame {
         for(int i=0;i<40;i++){
             console.setText("");
             WriteInConsole("info", "*============================*\n");
-            WriteInConsole("info", "|> look-in for this repo in github.com/Over-k |\n");
+            WriteInConsole("info", "|> look-in for this repo in github.com/Over-k/Spider |\n");
             WriteInConsole("info", "*============================*\n");
         }
         // TODO add your handling code here:
